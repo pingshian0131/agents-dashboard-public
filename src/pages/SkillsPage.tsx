@@ -1,17 +1,13 @@
-import { useState, useEffect } from 'react';
-import type { SkillOwner, Skill } from '../types';
-import { fetchSkills } from '../api';
-import { Layout } from '../components/Layout';
+import { useState } from 'react';
+import type { SkillOwner, Skill, SkillSelection } from '../types';
 import { css, theme } from '../theme';
-
-type Selection = { type: 'overview' } | { type: 'owner'; name: string } | { type: 'skill'; ownerName: string; skillName: string };
 
 const SECTION_LABELS: Record<string, string> = {
   global: 'GLOBAL',
   shared: 'SHARED',
 };
 
-function sectionLabel(owner: SkillOwner): string {
+export function sectionLabel(owner: SkillOwner): string {
   return SECTION_LABELS[owner.name] || owner.label.toUpperCase();
 }
 
@@ -72,26 +68,15 @@ function SkillCard({ skill }: { skill: Skill }) {
   );
 }
 
-export function SkillsPage() {
-  const [owners, setOwners] = useState<SkillOwner[]>([]);
-  const [totalSkills, setTotalSkills] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [selection, setSelection] = useState<Selection>({ type: 'overview' });
+interface SkillsContentProps {
+  owners: SkillOwner[];
+  totalSkills: number;
+  selection: SkillSelection;
+  loading: boolean;
+  error: string;
+}
 
-  useEffect(() => {
-    fetchSkills()
-      .then(data => {
-        setOwners(data.owners);
-        setTotalSkills(data.totalSkills);
-        setLoading(false);
-      })
-      .catch(e => {
-        setError(e.message);
-        setLoading(false);
-      });
-  }, []);
-
+export function SkillsContent({ owners, totalSkills, selection, loading, error }: SkillsContentProps) {
   const selectedOwner = selection.type === 'owner'
     ? owners.find(o => o.name === selection.name)
     : selection.type === 'skill'
@@ -101,99 +86,6 @@ export function SkillsPage() {
   const selectedSkill = selection.type === 'skill'
     ? selectedOwner?.skills.find(s => s.name === selection.skillName)
     : null;
-
-  // Group owners into sections
-  const globalOwners = owners.filter(o => o.name === 'global');
-  const sharedOwners = owners.filter(o => o.name === 'shared');
-  const agentOwners = owners.filter(o => o.name !== 'global' && o.name !== 'shared');
-
-  const renderOwnerSection = (sectionName: string, sectionOwners: SkillOwner[]) => {
-    if (sectionOwners.length === 0) return null;
-    return (
-      <div key={sectionName}>
-        <div style={{ padding: '8px 16px 4px', color: theme.green, fontSize: 11, fontWeight: 700 }}>
-          {sectionName}
-        </div>
-        {sectionOwners.map(owner => (
-          <div key={owner.name}>
-            <div
-              onClick={() => setSelection({ type: 'owner', name: owner.name })}
-              style={{
-                padding: '5px 16px',
-                cursor: 'pointer',
-                fontSize: 12,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                color: (selection.type === 'owner' && selection.name === owner.name) ||
-                       (selection.type === 'skill' && selection.ownerName === owner.name)
-                  ? theme.green : theme.text,
-                fontWeight: (selection.type === 'owner' && selection.name === owner.name) ? 700 : 400,
-                background: (selection.type === 'owner' && selection.name === owner.name) ? theme.bgHover : 'transparent',
-              }}
-            >
-              <span>{sectionLabel(owner)}</span>
-              <span style={{
-                background: theme.bgCard,
-                border: `1px solid ${theme.border}`,
-                borderRadius: 8,
-                padding: '0 6px',
-                fontSize: 10,
-                color: theme.textDim,
-              }}>
-                {owner.skills.length}
-              </span>
-            </div>
-            {owner.skills.map(skill => (
-              <div
-                key={skill.name}
-                onClick={() => setSelection({ type: 'skill', ownerName: owner.name, skillName: skill.name })}
-                style={{
-                  padding: '3px 16px 3px 32px',
-                  cursor: 'pointer',
-                  fontSize: 11,
-                  color: (selection.type === 'skill' && selection.ownerName === owner.name && selection.skillName === skill.name)
-                    ? theme.cyan : theme.textDim,
-                  background: (selection.type === 'skill' && selection.ownerName === owner.name && selection.skillName === skill.name)
-                    ? theme.bgHover : 'transparent',
-                }}
-              >
-                {skill.name}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const sidebar = (
-    <div>
-      <div
-        onClick={() => setSelection({ type: 'overview' })}
-        style={{
-          padding: '6px 16px 10px',
-          color: selection.type === 'overview' ? theme.green : theme.textDim,
-          fontSize: 12,
-          fontWeight: 700,
-          cursor: 'pointer',
-        }}
-      >
-        SKILLS OVERVIEW
-      </div>
-      {loading ? (
-        <div style={{ padding: '8px 16px', ...css.dimText }}>loading...</div>
-      ) : error ? (
-        <div style={{ padding: '8px 16px', color: theme.red, fontSize: 12 }}>{error}</div>
-      ) : (
-        <>
-          {renderOwnerSection('GLOBAL', globalOwners)}
-          {renderOwnerSection('SHARED', sharedOwners)}
-          {agentOwners.length > 0 && renderOwnerSection('AGENTS', agentOwners)}
-        </>
-      )}
-    </div>
-  );
 
   const renderOverview = () => (
     <div>
@@ -241,23 +133,24 @@ export function SkillsPage() {
     </div>
   );
 
+  if (loading) {
+    return <div style={{ textAlign: 'center', padding: 60, color: theme.textDim }}>loading skills...</div>;
+  }
+  if (error) {
+    return <div style={{ textAlign: 'center', padding: 60, color: theme.red }}>{error}</div>;
+  }
+  if (selection.type === 'overview') {
+    return renderOverview();
+  }
+  if (selection.type === 'owner' && selectedOwner) {
+    return renderOwnerSkills(selectedOwner);
+  }
+  if (selection.type === 'skill' && selectedSkill) {
+    return renderSkillDetail(selectedSkill);
+  }
   return (
-    <Layout sidebar={sidebar}>
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: 60, color: theme.textDim }}>loading skills...</div>
-      ) : error ? (
-        <div style={{ textAlign: 'center', padding: 60, color: theme.red }}>{error}</div>
-      ) : selection.type === 'overview' ? (
-        renderOverview()
-      ) : selection.type === 'owner' && selectedOwner ? (
-        renderOwnerSkills(selectedOwner)
-      ) : selection.type === 'skill' && selectedSkill ? (
-        renderSkillDetail(selectedSkill)
-      ) : (
-        <div style={{ textAlign: 'center', padding: 60, color: theme.textDim }}>
-          {'<'}- select a skill source or skill
-        </div>
-      )}
-    </Layout>
+    <div style={{ textAlign: 'center', padding: 60, color: theme.textDim }}>
+      {'<'}- select a skill source or skill
+    </div>
   );
 }

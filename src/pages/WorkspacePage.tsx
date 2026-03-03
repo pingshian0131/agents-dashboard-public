@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import type { Workspace } from '../types';
 import { fetchWorkspaces, fetchWorkspaceFile, saveWorkspaceFile, fetchWorkspaceMemoryFile } from '../api';
-import { Layout } from '../components/Layout';
 import { css, theme } from '../theme';
 
-export function WorkspacePage() {
+interface WorkspacePageProps {
+  onSidebarChange: (content: ReactNode) => void;
+}
+
+export function WorkspacePage({ onSidebarChange }: WorkspacePageProps) {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [selectedWs, setSelectedWs] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<string>('');
@@ -52,7 +55,6 @@ export function WorkspacePage() {
   };
 
   const isDirty = content !== originalContent;
-  const wsObj = workspaces.find(w => w.name === selectedWs);
 
   const toggleMemDir = (name: string) => {
     setExpandedMemDirs(prev => {
@@ -64,75 +66,77 @@ export function WorkspacePage() {
 
   const shortName = (name: string) => name.replace('workspace-', '').replace('workspace', 'default');
 
-  const sidebar = (
-    <div>
-      <div style={{ padding: '0 16px 8px', color: theme.green, fontSize: 12, fontWeight: 700 }}>
-        WORKSPACES
-      </div>
-      {loading ? (
-        <div style={{ padding: '8px 16px', ...css.dimText }}>loading...</div>
-      ) : (
-        workspaces.map(ws => (
-          <div key={ws.name}>
-            {/* Workspace name */}
-            <div style={{
-              padding: '6px 16px',
-              fontSize: 13,
-              color: selectedWs === ws.name ? theme.green : theme.text,
-              fontWeight: selectedWs === ws.name ? 700 : 400,
-            }}>
-              {shortName(ws.name)}
-            </div>
-            {/* Standard files */}
-            {ws.files.map(f => (
-              <div
-                key={f.name}
-                onClick={() => loadFile(ws.name, f.name, false)}
-                style={{
-                  padding: '3px 16px 3px 32px',
-                  cursor: 'pointer',
-                  fontSize: 12,
-                  color: (selectedWs === ws.name && selectedFile === f.name && !isMemoryFile) ? theme.cyan : theme.textDim,
-                  background: (selectedWs === ws.name && selectedFile === f.name && !isMemoryFile) ? theme.bgHover : 'transparent',
-                }}
-              >
-                {f.name}
+  // Push sidebar content up to App
+  useEffect(() => {
+    const sidebar = (
+      <div>
+        <div style={{ padding: '0 16px 8px', color: theme.green, fontSize: 12, fontWeight: 700 }}>
+          WORKSPACES
+        </div>
+        {loading ? (
+          <div style={{ padding: '8px 16px', ...css.dimText }}>loading...</div>
+        ) : (
+          workspaces.map(ws => (
+            <div key={ws.name}>
+              <div style={{
+                padding: '6px 16px',
+                fontSize: 13,
+                color: selectedWs === ws.name ? theme.green : theme.text,
+                fontWeight: selectedWs === ws.name ? 700 : 400,
+              }}>
+                {shortName(ws.name)}
               </div>
-            ))}
-            {/* Memory directory */}
-            {ws.memoryFiles.length > 0 && (
-              <>
+              {ws.files.map(f => (
                 <div
-                  onClick={() => toggleMemDir(ws.name)}
-                  style={{ padding: '3px 16px 3px 32px', cursor: 'pointer', fontSize: 12, color: theme.yellow }}
+                  key={f.name}
+                  onClick={() => loadFile(ws.name, f.name, false)}
+                  style={{
+                    padding: '3px 16px 3px 32px',
+                    cursor: 'pointer',
+                    fontSize: 12,
+                    color: (selectedWs === ws.name && selectedFile === f.name && !isMemoryFile) ? theme.cyan : theme.textDim,
+                    background: (selectedWs === ws.name && selectedFile === f.name && !isMemoryFile) ? theme.bgHover : 'transparent',
+                  }}
                 >
-                  {expandedMemDirs.has(ws.name) ? 'v' : '>'} memory/
+                  {f.name}
                 </div>
-                {expandedMemDirs.has(ws.name) && ws.memoryFiles.map(f => (
+              ))}
+              {ws.memoryFiles.length > 0 && (
+                <>
                   <div
-                    key={f.name}
-                    onClick={() => loadFile(ws.name, f.name, true)}
-                    style={{
-                      padding: '3px 16px 3px 48px',
-                      cursor: 'pointer',
-                      fontSize: 11,
-                      color: (selectedWs === ws.name && selectedFile === f.name && isMemoryFile) ? theme.cyan : theme.textDim,
-                      background: (selectedWs === ws.name && selectedFile === f.name && isMemoryFile) ? theme.bgHover : 'transparent',
-                    }}
+                    onClick={() => toggleMemDir(ws.name)}
+                    style={{ padding: '3px 16px 3px 32px', cursor: 'pointer', fontSize: 12, color: theme.yellow }}
                   >
-                    {f.name}
+                    {expandedMemDirs.has(ws.name) ? 'v' : '>'} memory/
                   </div>
-                ))}
-              </>
-            )}
-          </div>
-        ))
-      )}
-    </div>
-  );
+                  {expandedMemDirs.has(ws.name) && ws.memoryFiles.map(f => (
+                    <div
+                      key={f.name}
+                      onClick={() => loadFile(ws.name, f.name, true)}
+                      style={{
+                        padding: '3px 16px 3px 48px',
+                        cursor: 'pointer',
+                        fontSize: 11,
+                        color: (selectedWs === ws.name && selectedFile === f.name && isMemoryFile) ? theme.cyan : theme.textDim,
+                        background: (selectedWs === ws.name && selectedFile === f.name && isMemoryFile) ? theme.bgHover : 'transparent',
+                      }}
+                    >
+                      {f.name}
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    );
+    onSidebarChange(sidebar);
+    return () => onSidebarChange(null);
+  }, [workspaces, selectedWs, selectedFile, isMemoryFile, loading, expandedMemDirs, onSidebarChange]);
 
   return (
-    <Layout sidebar={sidebar}>
+    <>
       {selectedFile ? (
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -174,6 +178,6 @@ export function WorkspacePage() {
           {'<'}- select a workspace file to view
         </div>
       )}
-    </Layout>
+    </>
   );
 }

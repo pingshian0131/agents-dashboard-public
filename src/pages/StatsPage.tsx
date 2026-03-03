@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import type { Stats } from '../types';
 import { fetchStats } from '../api';
 import { css, theme } from '../theme';
@@ -18,12 +18,21 @@ function Bar({ label, count, max }: { label: string; count: number; max: number 
   );
 }
 
-export function StatsPage() {
+interface StatsPageProps {
+  onSidebarChange: (content: ReactNode) => void;
+}
+
+export function StatsPage({ onSidebarChange }: StatsPageProps) {
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
     fetchStats().then(setStats);
   }, []);
+
+  useEffect(() => {
+    onSidebarChange(null);
+    return () => onSidebarChange(null);
+  }, [onSidebarChange]);
 
   if (!stats) return <div style={{ padding: 40, color: theme.textDim }}>loading...</div>;
 

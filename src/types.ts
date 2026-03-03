@@ -41,11 +41,20 @@ export interface Workspace {
 
 export type Page = 'lancedb' | 'workspaces' | 'stats';
 
-// 頂層 Dashboard 切換
+// 頂層 Dashboard 切換（deprecated — 改用 AppPage）
 export type Dashboard = 'memory' | 'skills';
 
-// Memory Dashboard 的 sub-page
+// Memory Dashboard 的 sub-page（deprecated — 改用 AppPage）
 export type MemoryPage = 'lancedb' | 'workspaces' | 'stats';
+
+// 統一頁面導航
+export type AppPage = 'lancedb' | 'workspaces' | 'stats' | 'skills';
+
+// Skills 選取狀態
+export type SkillSelection =
+  | { type: 'overview' }
+  | { type: 'owner'; name: string }
+  | { type: 'skill'; ownerName: string; skillName: string };
 
 // Skills 型別
 export interface Skill {

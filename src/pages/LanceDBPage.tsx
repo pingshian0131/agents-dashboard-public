@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import type { Memory, MemoryInput, ScopeInfo } from '../types';
 import { fetchMemories, fetchScopes, createMemory, updateMemory, deleteMemory } from '../api';
-import { Layout } from '../components/Layout';
 import { SearchBar } from '../components/SearchBar';
 import { MemoryCard } from '../components/MemoryCard';
 import { MemoryForm } from '../components/MemoryForm';
@@ -10,7 +9,11 @@ import { theme } from '../theme';
 
 const LIMIT = 15;
 
-export function LanceDBPage() {
+interface LanceDBPageProps {
+  onSidebarChange: (content: ReactNode) => void;
+}
+
+export function LanceDBPage({ onSidebarChange }: LanceDBPageProps) {
   const [memories, setMemories] = useState<Memory[]>([]);
   const [total, setTotal] = useState(0);
   const [scopes, setScopes] = useState<ScopeInfo[]>([]);
@@ -39,6 +42,51 @@ export function LanceDBPage() {
   }, [selectedScope, search, offset]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Push sidebar content up to App
+  useEffect(() => {
+    const sidebar = (
+      <div>
+        <div style={{ padding: '0 16px 8px', color: theme.green, fontSize: 12, fontWeight: 700 }}>
+          SCOPES
+        </div>
+        <div
+          onClick={() => { setSelectedScope(undefined); setOffset(0); }}
+          style={{
+            padding: '6px 16px',
+            cursor: 'pointer',
+            fontSize: 13,
+            background: !selectedScope ? theme.bgHover : 'transparent',
+            color: !selectedScope ? theme.green : theme.textDim,
+            borderLeft: !selectedScope ? `2px solid ${theme.green}` : '2px solid transparent',
+          }}
+        >
+          all <span style={{ color: theme.textDim, fontSize: 11 }}>({scopes.reduce((s, x) => s + x.count, 0)})</span>
+        </div>
+        {scopes.map(s => (
+          <div
+            key={s.scope}
+            onClick={() => { setSelectedScope(s.scope); setOffset(0); }}
+            style={{
+              padding: '6px 16px',
+              cursor: 'pointer',
+              fontSize: 13,
+              background: selectedScope === s.scope ? theme.bgHover : 'transparent',
+              color: selectedScope === s.scope ? theme.green : theme.textDim,
+              borderLeft: selectedScope === s.scope ? `2px solid ${theme.green}` : '2px solid transparent',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {s.scope} <span style={{ color: theme.textDim, fontSize: 11 }}>({s.count})</span>
+          </div>
+        ))}
+      </div>
+    );
+    onSidebarChange(sidebar);
+    return () => onSidebarChange(null);
+  }, [scopes, selectedScope, onSidebarChange]);
 
   const handleSearch = (q: string) => {
     setSearch(q);
@@ -72,48 +120,8 @@ export function LanceDBPage() {
     load();
   };
 
-  const sidebar = (
-    <div>
-      <div style={{ padding: '0 16px 8px', color: theme.green, fontSize: 12, fontWeight: 700 }}>
-        SCOPES
-      </div>
-      <div
-        onClick={() => { setSelectedScope(undefined); setOffset(0); }}
-        style={{
-          padding: '6px 16px',
-          cursor: 'pointer',
-          fontSize: 13,
-          background: !selectedScope ? theme.bgHover : 'transparent',
-          color: !selectedScope ? theme.green : theme.textDim,
-          borderLeft: !selectedScope ? `2px solid ${theme.green}` : '2px solid transparent',
-        }}
-      >
-        all <span style={{ color: theme.textDim, fontSize: 11 }}>({scopes.reduce((s, x) => s + x.count, 0)})</span>
-      </div>
-      {scopes.map(s => (
-        <div
-          key={s.scope}
-          onClick={() => { setSelectedScope(s.scope); setOffset(0); }}
-          style={{
-            padding: '6px 16px',
-            cursor: 'pointer',
-            fontSize: 13,
-            background: selectedScope === s.scope ? theme.bgHover : 'transparent',
-            color: selectedScope === s.scope ? theme.green : theme.textDim,
-            borderLeft: selectedScope === s.scope ? `2px solid ${theme.green}` : '2px solid transparent',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {s.scope} <span style={{ color: theme.textDim, fontSize: 11 }}>({s.count})</span>
-        </div>
-      ))}
-    </div>
-  );
-
   return (
-    <Layout sidebar={sidebar}>
+    <>
       <SearchBar onSearch={handleSearch} />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <span style={{ color: theme.textDim, fontSize: 12 }}>
@@ -146,7 +154,7 @@ export function LanceDBPage() {
           onCancel={() => { setShowForm(false); setEditingMemory(undefined); }}
         />
       )}
-    </Layout>
+    </>
   );
 }
 
