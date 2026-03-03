@@ -40,3 +40,30 @@ export interface Workspace {
 }
 
 export type Page = 'lancedb' | 'workspaces' | 'stats';
+
+// 頂層 Dashboard 切換
+export type Dashboard = 'memory' | 'skills';
+
+// Memory Dashboard 的 sub-page
+export type MemoryPage = 'lancedb' | 'workspaces' | 'stats';
+
+// Skills 型別
+export interface Skill {
+  name: string;
+  description: string;
+  homepage?: string;
+  version?: string;
+  files: { name: string; size: number }[];
+  totalSize: number;
+}
+
+export interface SkillOwner {
+  name: string;
+  label: string;
+  skills: Skill[];
+}
+
+export interface SkillsResponse {
+  owners: SkillOwner[];
+  totalSkills: number;
+}

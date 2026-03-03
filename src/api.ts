@@ -1,4 +1,4 @@
-import type { Memory, MemoryInput, ScopeInfo, Stats, Workspace } from './types';
+import type { Memory, MemoryInput, ScopeInfo, Stats, Workspace, SkillsResponse } from './types';
 
 const BASE = '/api';
 
@@ -73,4 +73,9 @@ export function saveWorkspaceFile(workspace: string, file: string, content: stri
 
 export function fetchWorkspaceMemoryFile(workspace: string, file: string): Promise<{ name: string; content: string }> {
   return request(`/workspaces/${workspace}/memory/${encodeURIComponent(file)}`);
+}
+
+// Skills API
+export function fetchSkills(): Promise<SkillsResponse> {
+  return request('/skills');
 }

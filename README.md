@@ -2,7 +2,7 @@
 
 # Memory Dashboard
 
-A web-based dashboard for managing LanceDB vector memories — browse, search, edit memories and manage workspace files.
+A web-based dashboard for managing LanceDB vector memories — browse, search, edit memories, manage workspace files, and explore skills.
 
 **Live Demo: [demo-memory-dashboard.simple-web.cc](https://demo-memory-dashboard.simple-web.cc/)**
 
@@ -11,6 +11,7 @@ A web-based dashboard for managing LanceDB vector memories — browse, search, e
 - **Memory Browser** — Filter by scope / category, full-text search
 - **Memory CRUD** — Create, edit, delete memories with auto-generated embeddings
 - **Workspace Manager** — View and edit standard workspace files (MEMORY.md, IDENTITY.md, etc.)
+- **Skills Dashboard** — Browse skills across global, shared, and agent-level sources
 - **Stats Dashboard** — Memory counts by scope and category
 - **Demo Mode** — Built-in sample data, no external dependencies required
 
@@ -68,6 +69,7 @@ docker run -p 3001:3001 \
 | `MEMORY_TABLE_NAME` | `memories` | LanceDB table name |
 | `EMBEDDING_MODEL` | `text-embedding-3-small` | OpenAI embedding model |
 | `OPENAI_API_KEY` | — | OpenAI API key (required in non-demo mode) |
+| `SKILLS_DIR` | `~/.claude/skills` | Global skills directory |
 
 ## Tech Stack
 

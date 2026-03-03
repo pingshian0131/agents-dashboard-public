@@ -66,6 +66,111 @@ export interface DemoWorkspace {
   memoryFiles: Record<string, string>;  // memory/ subdirectory files
 }
 
+// === Demo skills ===
+
+export interface DemoSkill {
+  name: string;
+  description: string;
+  homepage?: string;
+  version?: string;
+  files: { name: string; size: number }[];
+  totalSize: number;
+}
+
+export interface DemoSkillOwner {
+  name: string;
+  label: string;
+  skills: DemoSkill[];
+}
+
+export const DEMO_SKILLS: DemoSkillOwner[] = [
+  {
+    name: 'global',
+    label: 'Global',
+    skills: [
+      {
+        name: 'code-review',
+        description: 'Automated code review with best practices checking and security scanning.',
+        homepage: 'https://github.com/example/code-review-skill',
+        version: '1.2.0',
+        files: [
+          { name: 'SKILL.md', size: 2048 },
+          { name: '_meta.json', size: 256 },
+          { name: 'references/guidelines.md', size: 4096 },
+        ],
+        totalSize: 6400,
+      },
+      {
+        name: 'git-commit',
+        description: 'Generate conventional commit messages from staged changes.',
+        version: '0.9.1',
+        files: [
+          { name: 'SKILL.md', size: 1536 },
+          { name: '_meta.json', size: 198 },
+        ],
+        totalSize: 1734,
+      },
+      {
+        name: 'explain-code',
+        description: 'Explain code snippets with detailed annotations and complexity analysis.',
+        homepage: 'https://github.com/example/explain-code',
+        version: '2.0.0',
+        files: [
+          { name: 'SKILL.md', size: 3072 },
+          { name: '_meta.json', size: 210 },
+          { name: 'references/examples.md', size: 5120 },
+        ],
+        totalSize: 8402,
+      },
+    ],
+  },
+  {
+    name: 'shared',
+    label: 'Shared',
+    skills: [
+      {
+        name: 'deploy-pipeline',
+        description: 'CI/CD pipeline configuration and deployment automation.',
+        version: '1.0.0',
+        files: [
+          { name: 'SKILL.md', size: 2560 },
+          { name: '_meta.json', size: 180 },
+          { name: 'references/docker-template.md', size: 1024 },
+          { name: 'references/k8s-template.md', size: 2048 },
+        ],
+        totalSize: 5812,
+      },
+      {
+        name: 'api-design',
+        description: 'RESTful API design patterns and OpenAPI specification generation.',
+        homepage: 'https://github.com/example/api-design-skill',
+        version: '1.5.2',
+        files: [
+          { name: 'SKILL.md', size: 4096 },
+          { name: '_meta.json', size: 220 },
+        ],
+        totalSize: 4316,
+      },
+    ],
+  },
+  {
+    name: 'workspace-project-alpha',
+    label: 'project-alpha',
+    skills: [
+      {
+        name: 'data-viz',
+        description: 'D3.js data visualization templates and chart generation.',
+        version: '0.3.0',
+        files: [
+          { name: 'SKILL.md', size: 1800 },
+          { name: 'references/chart-types.md', size: 3200 },
+        ],
+        totalSize: 5000,
+      },
+    ],
+  },
+];
+
 export const DEMO_WORKSPACES: DemoWorkspace[] = [
   {
     name: 'workspace',

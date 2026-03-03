@@ -1,7 +1,7 @@
 /** In-memory store for DEMO_MODE — same interface as lancedb.ts */
 
 import { randomUUID } from 'node:crypto';
-import { DEMO_MEMORIES, DEMO_WORKSPACES, type DemoMemory } from './demo-data.js';
+import { DEMO_MEMORIES, DEMO_WORKSPACES, DEMO_SKILLS, type DemoMemory } from './demo-data.js';
 
 // Mutable copy of demo data
 let memories: DemoMemory[] = [...DEMO_MEMORIES];
@@ -172,4 +172,11 @@ export function saveDemoWorkspaceFile(wsName: string, fileName: string, content:
 
 export function getDemoWorkspaceMemoryFile(wsName: string, fileName: string): string | null {
   return wsMemFiles.get(wsName)?.get(fileName) ?? null;
+}
+
+// === Skills helpers for demo mode ===
+
+export function getDemoSkills() {
+  const totalSkills = DEMO_SKILLS.reduce((sum, o) => sum + o.skills.length, 0);
+  return { owners: DEMO_SKILLS, totalSkills };
 }

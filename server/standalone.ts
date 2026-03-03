@@ -4,6 +4,7 @@ import { join, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { handleMemoryApi } from './memoryApi.js';
 import { handleWorkspaceApi } from './workspaceApi.js';
+import { handleSkillsApi } from './skillsApi.js';
 
 const PORT = parseInt(process.env.PORT ?? '3001', 10);
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
@@ -55,7 +56,7 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
   // API routes
   if (url.pathname.startsWith('/api/')) {
     try {
-      const handled = await handleMemoryApi(req, res) || await handleWorkspaceApi(req, res);
+      const handled = await handleMemoryApi(req, res) || await handleWorkspaceApi(req, res) || await handleSkillsApi(req, res);
       if (!handled) {
         res.writeHead(404, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'not found' }));
