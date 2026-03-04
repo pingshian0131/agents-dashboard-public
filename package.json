@@ -1,6 +1,6 @@
 {
   "name": "@pingshian/agents-terminal-dashboard",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "module",
   "description": "Dashboard for OpenClaw agents — memory, agents, cron jobs, skills",
   "bin": {
