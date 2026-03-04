@@ -58,7 +58,8 @@ export async function getMemory(id: string): Promise<MemoryRecord | null> {
 }
 
 export async function createMemory(input: MemoryInput): Promise<MemoryRecord> {
-  const record: DemoMemory = {
+  // Demo mode: return fake result without persisting
+  return {
     id: randomUUID(),
     text: input.text,
     category: input.category,
@@ -67,16 +68,14 @@ export async function createMemory(input: MemoryInput): Promise<MemoryRecord> {
     timestamp: Date.now(),
     metadata: input.metadata ?? '{}',
   };
-  memories.unshift(record);
-  return record;
 }
 
 export async function updateMemory(id: string, input: Partial<MemoryInput>): Promise<MemoryRecord | null> {
-  const idx = memories.findIndex(m => m.id === id);
-  if (idx === -1) return null;
+  // Demo mode: return updated view without persisting
+  const existing = memories.find(m => m.id === id);
+  if (!existing) return null;
 
-  const existing = memories[idx];
-  memories[idx] = {
+  return {
     ...existing,
     ...(input.text !== undefined && { text: input.text }),
     ...(input.category !== undefined && { category: input.category }),
@@ -84,13 +83,11 @@ export async function updateMemory(id: string, input: Partial<MemoryInput>): Pro
     ...(input.importance !== undefined && { importance: input.importance }),
     ...(input.metadata !== undefined && { metadata: input.metadata }),
   };
-  return memories[idx];
 }
 
-export async function deleteMemory(id: string): Promise<boolean> {
-  const len = memories.length;
-  memories = memories.filter(m => m.id !== id);
-  return memories.length < len;
+export async function deleteMemory(_id: string): Promise<boolean> {
+  // Demo mode: pretend success without persisting
+  return true;
 }
 
 export async function getScopes(): Promise<{ scope: string; count: number }[]> {
@@ -163,11 +160,9 @@ export function getDemoWorkspaceFile(wsName: string, fileName: string): string |
   return wsFiles.get(wsName)?.get(fileName) ?? null;
 }
 
-export function saveDemoWorkspaceFile(wsName: string, fileName: string, content: string): boolean {
-  const files = wsFiles.get(wsName);
-  if (!files) return false;
-  files.set(fileName, content);
-  return true;
+export function saveDemoWorkspaceFile(wsName: string, fileName: string, _content: string): boolean {
+  // Demo mode: pretend success without persisting
+  return wsFiles.has(wsName);
 }
 
 export function getDemoWorkspaceMemoryFile(wsName: string, fileName: string): string | null {
