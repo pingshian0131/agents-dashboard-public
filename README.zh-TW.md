@@ -4,7 +4,7 @@
 
 [OpenClaw](https://github.com/open-claw/openclaw) agent 管理儀表板 — 記憶、agents、排程任務、skills。
 
-**[線上 Demo](https://demo-agents-dashboard.simple-web.cc/)**
+**[線上 Demo](https://demo-agents-dashboard.ping-claw.cc/)**
 
 ## 安裝
 
